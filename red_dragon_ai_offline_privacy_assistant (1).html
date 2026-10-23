@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RED DRAGON AI - Offline Privacy Assistant</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(220, 38, 38, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(220, 38, 38, 0.7);
+    }
+    .chat-bubble-user {
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bubble-ai {
+      border-bottom-left-radius: 2px;
+    }
+
+    /* Radar Pulse Animation Symbol */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .anim-pulse-symbol {
+      animation: pulseRing 1.5s infinite ease-in-out;
+    }
+
+    /* Dynamic Theme Accent Classes */
+    body.theme-red .accent-color { color: #ef4444; }
+    body.theme-red .accent-bg { background-color: #dc2626; }
+    body.theme-red .accent-bg-hover:hover { background-color: #b91c1c; }
+    body.theme-red .accent-border { border-color: rgba(185, 28, 28, 0.5); }
+    body.theme-red .accent-ring:focus { --tw-ring-color: #dc2626; }
+    body.theme-red .accent-badge-bg { background-color: #450a0a; }
+
+    body.theme-sky .accent-color { color: #38bdf8; }
+    body.theme-sky .accent-bg { background-color: #0284c7; }
+    body.theme-sky .accent-bg-hover:hover { background-color: #0369a1; }
+    body.theme-sky .accent-border { border-color: rgba(3, 105, 161, 0.5); }
+    body.theme-sky .accent-ring:focus { --tw-ring-color: #0284c7; }
+    body.theme-sky .accent-badge-bg { background-color: #0c4a6e; }
+
+    body.theme-emerald .accent-color { color: #34d399; }
+    body.theme-emerald .accent-bg { background-color: #059669; }
+    body.theme-emerald .accent-bg-hover:hover { background-color: #047857; }
+    body.theme-emerald .accent-border { border-color: rgba(4, 120, 87, 0.5); }
+    body.theme-emerald .accent-ring:focus { --tw-ring-color: #059669; }
+    body.theme-emerald .accent-badge-bg { background-color: #064e3b; }
+
+    body.theme-purple .accent-color { color: #c084fc; }
+    body.theme-purple .accent-bg { background-color: #9333ea; }
+    body.theme-purple .accent-bg-hover:hover { background-color: #7e22ce; }
+    body.theme-purple .accent-border { border-color: rgba(126, 34, 206, 0.5); }
+    body.theme-purple .accent-ring:focus { --tw-ring-color: #9333ea; }
+    body.theme-purple .accent-badge-bg { background-color: #581c87; }
+
+    body.theme-amber .accent-color { color: #fbbf24; }
+    body.theme-amber .accent-bg { background-color: #d97706; }
+    body.theme-amber .accent-bg-hover:hover { background-color: #b45309; }
+    body.theme-amber .accent-border { border-color: rgba(180, 83, 9, 0.5); }
+    body.theme-amber .accent-ring:focus { --tw-ring-color: #d97706; }
+    body.theme-amber .accent-badge-bg { background-color: #78350f; }
+
+    body.app-light-mode {
+      background-color: #f4f4f5 !important;
+      color: #18181b;
+    }
+    body.app-light-mode main {
+      background-color: #f4f4f5 !important;
+    }
+    body.app-light-mode header {
+      background-color: #ffffff !important;
+      border-color: #e4e4e7 !important;
+    }
+    body.app-light-mode .modal-card {
+      background-color: #ffffff !important;
+      color: #18181b !important;
+      border-color: #e4e4e7 !important;
+    }
+    body.app-light-mode .card-box {
+      background-color: #f4f4f5 !important;
+      color: #27272a !important;
+      border-color: #e4e4e7 !important;
+    }
+    body.app-light-mode textarea, body.app-light-mode input, body.app-light-mode select {
+      background-color: #ffffff !important;
+      color: #18181b !important;
+      border-color: #d4d4d8 !important;
+    }
+  </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen flex flex-col font-sans transition-colors duration-200 theme-red">
+
+  <!-- WRAPPER TO SIMULATE YOUR PHONE SCREEN DIMENSIONS (1520 x 720 px, 271 ppi) -->
+  <div class="w-full max-w-[720px] mx-auto min-h-screen flex flex-col bg-black shadow-2xl border-x accent-border relative aspect-[720/1520]">
+
+    <!-- TOP HEADER NAVBAR -->
+    <header class="w-full bg-black/90 border-b accent-border px-3 py-2.5 sticky top-0 z-30 flex items-center justify-between shadow-lg backdrop-blur-md">
+      <div class="flex items-center space-x-2 min-w-0">
+        <!-- App Logo & Animation Pulse Indicator Symbol -->
+        <div id="appLogoContainer" class="w-8 h-8 rounded-full flex items-center justify-center bg-black font-bold text-sm shrink-0 overflow-hidden shadow border accent-border relative">
+          <i class="fa-solid fa-dragon text-sm accent-color"></i>
+        </div>
+        
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5">
+            <h1 id="appTitle" class="font-bold text-xs leading-none accent-color tracking-wide truncate">RED DRAGON AI</h1>
+            <!-- Visual Dynamic Processing Animation Symbol -->
+            <span id="aiActiveAnimationSymbol" class="hidden text-[9px] accent-color font-bold flex items-center gap-1">
+              <i class="fa-solid fa-atom fa-spin text-[10px]"></i>
+            </span>
+            <span id="uncensoredBadge" class="hidden text-[8px] accent-bg text-white font-bold px-1 py-0.2 rounded uppercase tracking-wider shrink-0">Uncensored</span>
+            <span id="incognitoBadge" class="hidden text-[8px] accent-badge-bg accent-color border accent-border font-bold px-1 py-0.2 rounded flex items-center gap-0.5 shrink-0">
+              <i class="fa-solid me-0.5 fa-user-secret"></i> Incognito
+            </span>
+          </div>
+          <p class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+            <span id="statusPulseDot" class="w-1.5 h-1.5 rounded-full accent-bg animate-pulse inline-block shrink-0"></span>
+            <span id="statusText" class="truncate">100% Offline AI Studio</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="flex items-center space-x-1 shrink-0">
+        <!-- Mute / Unmute Voice Button -->
+        <button id="toggleMuteBtn" onclick="toggleMuteVoice()" title="Toggle Voice Sound" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i id="muteIcon" class="fa-solid fa-volume-high text-xs"></i>
+        </button>
+
+        <!-- Account Button -->
+        <button id="accountBtn" onclick="openAccountSettings()" title="Account & Profile" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i class="fa-solid fa-user-gear text-xs"></i>
+        </button>
+
+        <!-- Developer Mode Quick Modal Toggle Button (Password Protected) -->
+        <button onclick="requestDeveloperAccess()" title="Developer Options & Neural Tools" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i class="fa-solid fa-code text-xs"></i>
+        </button>
+
+        <!-- Incognito Toggle Button -->
+        <button id="toggleIncognitoBtn" onclick="toggleIncognitoMode()" title="Toggle Incognito Mode" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i class="fa-solid fa-user-secret text-xs"></i>
+        </button>
+
+        <!-- Local File Access Modal Trigger -->
+        <button onclick="openModal('fileModal')" title="Access Device Files" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i class="fa-solid fa-folder-open text-xs"></i>
+        </button>
+
+        <!-- Settings Icon -->
+        <button onclick="openModal('settingsModal')" title="Settings" class="p-1.5 rounded-lg hover:bg-zinc-800/50 accent-color border accent-border transition">
+          <i class="fa-solid fa-gear text-xs"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN CHAT CONTAINER -->
+    <main class="flex-1 w-full px-2.5 py-3 flex flex-col justify-between overflow-hidden bg-black">
+      <!-- Chat Messages Stream -->
+      <div id="chatContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-0.5 pb-2">
+        <!-- Welcome Card -->
+        <div class="p-3 rounded-xl bg-zinc-950 border accent-border card-box shadow-md text-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5 accent-color font-semibold text-xs">
+              <i class="fa-solid fa-shield-halved text-xs"></i>
+              <span>Uncensored Media Search & AI Engine</span>
+            </div>
+            <!-- Dynamic Neural Radar Symbol -->
+            <div class="flex items-center space-x-1 text-[10px] accent-color font-mono">
+              <i class="fa-solid fa-bolt text-xs"></i>
+              <span>LIVE GOOGLE SEARCH ACTIVE</span>
+            </div>
+          </div>
+
+          <p class="text-gray-300 text-[11px] leading-relaxed">
+            Ask for any images, videos, audio clips, or web data. RED DRAGON AI searches live web indices and displays random results instantly without restrictions.
+          </p>
+
+          <!-- MULTI-MEDIA GENERATION QUICK ACTION BUTTONS -->
+          <div class="grid grid-cols-2 gap-1.5 pt-1">
+            <button onclick="searchLiveMediaPrompt('image')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-gray-200 px-2 py-1.5 rounded-lg border accent-border flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-image accent-color"></i> Search Random Images
+            </button>
+            <button onclick="searchLiveMediaPrompt('video')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-gray-200 px-2 py-1.5 rounded-lg border accent-border flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-video accent-color"></i> Find Uncensored Videos
+            </button>
+            <button onclick="searchLiveMediaPrompt('audio')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-gray-200 px-2 py-1.5 rounded-lg border accent-border flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-music accent-color"></i> Fetch Audio Streams
+            </button>
+            <button onclick="searchLiveMediaPrompt('web')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-gray-200 px-2 py-1.5 rounded-lg border accent-border flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-globe accent-color"></i> Unrestricted Web Search
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT INPUT AREA -->
+      <div class="pt-1.5">
+        <form id="chatForm" onsubmit="handleSendMessage(event)" class="relative flex items-center">
+          <textarea id="userInput" rows="1" placeholder="Type prompt or ask to create image/video/audio..." class="w-full resize-none py-2.5 pl-3 pr-16 bg-zinc-950 border accent-border rounded-xl focus:outline-none accent-ring text-white shadow-md text-xs" onkeydown="handleKeyDown(event)"></textarea>
+          
+          <div class="absolute right-1.5 flex items-center space-x-1">
+            <!-- Read Aloud button -->
+            <button type="button" onclick="speakLastResponse()" title="Read Aloud" class="p-1.5 accent-color hover:opacity-80 text-xs">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="p-1.5 accent-bg accent-bg-hover text-white rounded-lg shadow-md transition flex items-center justify-center text-xs">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+        <div class="flex items-center justify-between text-[9px] opacity-80 mt-1 px-1 accent-color">
+          <span id="activeLangDisplay">Language: English British</span>
+          <span id="activeVoiceDisplay">Voice: JARVIS</span>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL: MESSAGE OPTIONS CONTEXT MENU (LONG PRESS) -->
+  <div id="messageOptionsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3">
+    <div class="bg-zinc-950 border accent-border modal-card w-full max-w-xs rounded-xl shadow-2xl p-3 space-y-2 text-gray-200">
+      <div class="flex justify-between items-center border-b accent-border pb-1.5 bg-black/50 -mx-3 -mt-3 p-3 rounded-t-xl">
+        <h3 class="font-bold accent-color text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check accent-color"></i> Message Options
+        </h3>
+        <button onclick="closeModal('messageOptionsModal')" class="text-gray-400 hover:text-red-500">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <div class="space-y-1 py-1 text-xs">
+        <button onclick="msgAction('copy')" class="w-full text-left p-2 rounded-lg hover:bg-zinc-900 flex items-center gap-2.5 transition">
+          <i class="fa-solid fa-copy accent-color w-4"></i> Copy Text
+        </button>
+        <button onclick="msgAction('forward')" class="w-full text-left p-2 rounded-lg hover:bg-zinc-900 flex items-center gap-2.5 transition">
+          <i class="fa-solid fa-share accent-color w-4"></i> Forward Message
+        </button>
+        <button onclick="msgAction('send')" class="w-full text-left p-2 rounded-lg hover:bg-zinc-900 flex items-center gap-2.5 transition">
+          <i class="fa-solid fa-paper-plane accent-color w-4"></i> Send Again / Re-send
+        </button>
+        <div class="border-t accent-border my-1"></div>
+        <button onclick="msgAction('deleteForMe')" class="w-full text-left p-2 rounded-lg hover:bg-red-950/40 text-red-300 flex items-center gap-2.5 transition">
+          <i class="fa-solid fa-trash-can w-4 text-red-400"></i> Delete For Me
+        </button>
+        <button onclick="msgAction('deleteForEveryone')" class="w-full text-left p-2 rounded-lg hover:bg-red-950/40 text-red-300 flex items-center gap-2.5 transition">
+          <i class="fa-solid fa-ban w-4 text-red-400"></i> Delete For Everyone
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DEVELOPER OPTIONS & SYSTEM NEURAL DIAGNOSTICS -->
+  <div id="developerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3">
+    <div class="bg-zinc-950 border accent-border modal-card w-full max-w-sm rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden text-gray-200">
+      <!-- Header -->
+      <div class="px-4 py-3 border-b accent-border flex justify-between items-center bg-black/50">
+        <h3 class="text-xs font-bold accent-color flex items-center gap-1.5">
+          <i class="fa-solid fa-code accent-color"></i> Developer Options & Diagnostics
+        </h3>
+        <button onclick="closeModal('developerModal')" class="text-gray-400 hover:text-red-500">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-4 overflow-y-auto space-y-3.5 text-xs">
+        
+        <!-- Local Memory / Neural Node Status -->
+        <div class="p-2.5 bg-zinc-900/80 rounded-lg border accent-border space-y-1.5">
+          <div class="flex justify-between items-center font-bold text-[11px] accent-color">
+            <span>Local Neural Logic Core</span>
+            <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-700 px-1.5 py-0.5 rounded">Active</span>
+          </div>
+          <div class="text-[10px] text-gray-300 font-mono space-y-0.5">
+            <p>• Memory Heap: <span id="devMemHeap">34.2 MB / Local Browser</span></p>
+            <p>• Canvas Engine: <span class="text-emerald-400">Offline HTML5 Canvas 2D</span></p>
+            <p>• Web Audio Synth: <span class="text-emerald-400">WebAudio API Enabled</span></p>
+            <p>• Animation Node: <span class="text-emerald-400">CSS3 Keyframes + JS Engine</span></p>
+          </div>
+        </div>
+
+        <!-- Toggles & Dev Options -->
+        <div class="space-y-2">
+          <label class="font-semibold text-gray-300 block text-[11px]">Developer Debug Switches</label>
+          
+          <div class="flex items-center justify-between p-2 bg-zinc-900 rounded-lg border accent-border">
+            <span class="text-[10px]">Verbose Console Logging</span>
+            <input type="checkbox" id="devVerboseToggle" onchange="toggleDevSetting('verbose')" class="accent-color">
+          </div>
+
+          <div class="flex items-center justify-between p-2 bg-zinc-900 rounded-lg border accent-border">
+            <span class="text-[10px]">Show Neural Processing Symbols</span>
+            <input type="checkbox" id="devSymbolToggle" checked onchange="toggleDevSetting('symbols')" class="accent-color">
+          </div>
+
+          <div class="flex items-center justify-between p-2 bg-zinc-900 rounded-lg border accent-border">
+            <span class="text-[10px]">Simulate WebGL Hardware Acceleration</span>
+            <input type="checkbox" id="devHardwareToggle" checked onchange="toggleDevSetting('hardware')" class="accent-color">
+          </div>
+        </div>
+
+        <!-- Code Injector / Live Update Engine -->
+        <div class="space-y-1.5 p-2.5 bg-zinc-900/90 rounded-lg border accent-border">
+          <label class="font-bold accent-color block text-[10px] flex items-center justify-between">
+            <span><i class="fa-solid fa-terminal me-1"></i> Inject Updated Code Module</span>
+            <span class="text-[8px] opacity-70 font-mono">JS / Custom Script</span>
+          </label>
+          <textarea id="devCodeInjectorInput" rows="3" placeholder="// Paste JavaScript code to execute live updates..." class="w-full bg-zinc-950 border accent-border rounded-lg p-2 font-mono text-[10px] text-gray-200 focus:outline-none accent-ring resize-none"></textarea>
+          <button onclick="executeInjectedCode()" class="w-full py-1.5 accent-bg accent-bg-hover text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-bolt"></i> Apply & Execute Code Update
+          </button>
+        </div>
+
+        <!-- Dump Raw Local Storage Button -->
+        <div class="pt-2 border-t accent-border space-y-1.5">
+          <button onclick="dumpLocalStorage()" class="w-full py-1.5 bg-zinc-900 hover:bg-zinc-800 text-gray-300 rounded-lg border accent-border text-[10px] font-mono flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-database"></i> Inspect Local Storage Payload
+          </button>
+          <button onclick="clearAllChatLogs()" class="w-full py-1.5 bg-red-950/60 hover:bg-red-900/80 text-red-300 rounded-lg border border-red-800 text-[10px] font-mono flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-trash"></i> Clear Offline Cache Memory
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DEVELOPER PASSWORD AUTH -->
+  <div id="devPasswordModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3">
+    <div class="bg-zinc-950 border accent-border modal-card w-full max-w-xs rounded-xl shadow-2xl p-4 space-y-3 text-gray-200">
+      <div class="flex justify-between items-center border-b accent-border pb-2 bg-black/50 -mx-4 -mt-4 p-3 rounded-t-xl">
+        <h3 class="font-bold accent-color text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-lock accent-color"></i> Developer Security Check
+        </h3>
+        <button onclick="closeModal('devPasswordModal')" class="text-gray-400 hover:text-red-500">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <p class="text-[10px] text-gray-300 leading-tight">
+        Enter developer password to unlock neural diagnostics & code injector tools (achievemen@radium):
+      </p>
+
+      <form onsubmit="verifyDeveloperPassword(event)" class="space-y-2">
+        <input type="password" id="devPasswordInput" placeholder="Enter password..." class="w-full bg-zinc-900 border accent-border rounded-lg p-2 text-xs text-white focus:outline-none accent-ring">
+        <div id="devPassError" class="hidden text-[10px] text-red-400 flex items-center gap-1">
+          <i class="fa-solid fa-circle-exclamation"></i> Incorrect password.
+        </div>
+        <button type="submit" class="w-full py-1.5 accent-bg accent-bg-hover text-white rounded-lg text-xs font-semibold">
+          Unlock Developer Mode
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3">
+    <div class="bg-zinc-950 border accent-border modal-card w-full max-w-sm rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden text-gray-200">
+      <!-- Header -->
+      <div class="px-4 py-3 border-b accent-border flex justify-between items-center bg-black/50">
+        <h3 class="text-xs font-bold accent-color flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders accent-color"></i> Settings & Preferences
+        </h3>
+        <button onclick="closeModal('settingsModal')" class="text-gray-400 hover:text-red-500">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Settings Content Body -->
+      <div class="p-4 overflow-y-auto space-y-4 text-xs">
+        
+        <!-- Quick Link to Developer Mode (Password Protected) -->
+        <button onclick="closeModal('settingsModal'); requestDeveloperAccess();" class="w-full p-2 bg-zinc-900/90 hover:bg-zinc-850 rounded-lg border accent-border flex items-center justify-between text-xs accent-color font-bold">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-code"></i> Developer Mode & Diagnostics</span>
+          <i class="fa-solid fa-lock text-[10px]"></i>
+        </button>
+
+        <!-- 1. Uncensored Mode Toggle -->
+        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-lg border accent-border card-box">
+          <div>
+            <div class="font-bold text-xs accent-color flex items-center gap-1.5">
+              <i class="fa-solid fa-unlock text-xs"></i> Uncensored AI Mode
+            </div>
+            <p class="text-[10px] text-gray-400 mt-0.5 leading-tight">
+              Bypasses standard AI guardrails and restrictions.
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <input type="checkbox" id="uncensoredToggle" class="sr-only peer" onchange="updateSettings()">
+            <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+          </label>
+        </div>
+
+        <!-- Safe Search / Content Filtering Setting -->
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300 block text-[11px]">Safe Search Content Filter</label>
+          <select id="safeSearchSelect" onchange="updateSettings()" class="w-full bg-zinc-900 border accent-border rounded-lg p-2 text-white text-xs">
+            <option value="blur" selected>Blur Sensitive Content</option>
+            <option value="filter">Filter / Block Sensitive Content</option>
+            <option value="no">No Filter (Show All Unfiltered)</option>
+          </select>
+          <p class="text-[9px] text-gray-400">Controls handling of mature, unfiltered, or sensitive media search results.</p>
+        </div>
+
+        <!-- 2. Appearance & Theme -->
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300 block text-[11px]">Appearance Mode</label>
+          <select id="appearanceModeSelect" onchange="updateSettings()" class="w-full bg-zinc-900 border accent-border rounded-lg p-2 text-white focus:ring-1 accent-ring text-xs">
+            <option value="system">System Default</option>
+            <option value="light">Light Mode</option>
+            <option value="dark" selected>Dark Mode (Default Black)</option>
+          </select>
+        </div>
+
+        <!-- 3. Accent Colour Selector -->
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300 block text-[11px]">Theme Colour Accent</label>
+          <div class="flex space-x-2">
+            <button onclick="setThemeColor('red')" class="w-6 h-6 rounded-full bg-red-600 ring-2 ring-red-400 hover:scale-105 transition" title="Red (Default)"></button>
+            <button onclick="setThemeColor('sky')" class="w-6 h-6 rounded-full bg-sky-500 ring-2 ring-sky-300 hover:scale-105 transition" title="Sky Blue"></button>
+            <button onclick="setThemeColor('emerald')" class="w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-emerald-300 hover:scale-105 transition" title="Emerald Green"></button>
+            <button onclick="setThemeColor('purple')" class="w-6 h-6 rounded-full bg-purple-500 ring-2 ring-purple-300 hover:scale-105 transition" title="Neon Purple"></button>
+            <button onclick="setThemeColor('amber')" class="w-6 h-6 rounded-full bg-amber-500 ring-2 ring-amber-300 hover:scale-105 transition" title="Amber Gold"></button>
+          </div>
+        </div>
+
+        <!-- 4. Logo Management -->
+        <div class="space-y-2">
+          <label class="font-semibold text-gray-300 block text-[11px]">App Logo</label>
+          <select id="logoOptionSelect" onchange="handleLogoSelectChange()" class="w-full bg-zinc-900 border accent-border rounded-lg p-2 text-white text-xs">
+            <option value="default">Default Logo (MSI Red Dragon)</option>
+            <option value="logo1">Logo 1 - Futuristic Core</option>
+            <option value="logo2">Logo 2 - Shield Emblem</option>
+            <option value="logo3">Logo 3 - Quantum Node</option>
+            <option value="device">Select from Device File...</option>
+            <option value="url">Select from Custom URL...</option>
+          </select>
+
+          <!-- Hidden inputs for custom logo options -->
+          <div id="deviceLogoInputGroup" class="hidden">
+            <input type="file" id="logoFileInput" accept="image/*" onchange="loadLogoFromFile(event)" class="block w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-zinc-800 file:text-gray-200 hover:file:bg-zinc-700">
+          </div>
+          <div id="urlLogoInputGroup" class="hidden space-y-1">
+            <div class="flex space-x-1.5">
+              <input type="text" id="logoUrlInput" placeholder="Paste image URL..." class="flex-1 bg-zinc-900 border accent-border rounded-lg p-1.5 text-white text-[10px]">
+              <button onclick="applyLogoFromUrl()" class="px-2 py-1 accent-bg text-white rounded-lg text-[10px] font-medium">Apply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Voice & Tone Controls -->
+        <div class="space-y-2 p-3 bg-zinc-900/80 rounded-lg border accent-border card-box">
+          <label class="font-semibold text-gray-300 block text-[11px]">Inbuilt Voice Models</label>
+          <select id="voiceModelSelect" onchange="updateSettings()" class="w-full bg-zinc-950 border accent-border rounded-lg p-2 text-white text-xs">
+            <option value="jarvis" selected>JARVIS (Marvel)</option>
+            <option value="voice1">Voice 1 (Male)</option>
+            <option value="voice2">Voice 2 (Female)</option>
+            <option value="friday">FRIDAY (Marvel)</option>
+            <option value="ultron">ULTRON (Marvel)</option>
+            <option value="vision">VISION (Marvel)</option>
+          </select>
+
+          <!-- Pitch & Tone Sliders -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <div class="flex justify-between text-[10px] text-gray-400 mb-0.5">
+                <span>Tone / Pitch</span>
+                <span id="pitchVal">1.0</span>
+              </div>
+              <input type="range" id="voicePitch" min="0.5" max="1.5" step="0.1" value="1.0" oninput="updateSettings()" class="w-full accent-color h-1">
+            </div>
+            <div>
+              <div class="flex justify-between text-[10px] text-gray-400 mb-0.5">
+                <span>Speed / Rate</span>
+                <span id="rateVal">1.0</span>
+              </div>
+              <input type="range" id="voiceRate" min="0.5" max="1.5" step="0.1" value="1.0" oninput="updateSettings()" class="w-full accent-color h-1">
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Language Settings -->
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300 block text-[11px]">Communication Language</label>
+          <select id="languageSelect" onchange="updateSettings()" class="w-full bg-zinc-900 border accent-border rounded-lg p-2 text-white text-xs">
+            <option value="en-GB" selected>English British</option>
+            <option value="en-US">English UK / US</option>
+            <option value="ru-RU">Russian (Русский)</option>
+            <option value="ta-IN">Tamil (தமிழ்)</option>
+            <option value="ja-JP">Japanese (日本語)</option>
+            <option value="ko-KR">Korean (한국어)</option>
+            <option value="zh-CN">Chinese (中文)</option>
+            <option value="morse">Morse Code</option>
+          </select>
+        </div>
+
+        <!-- 7. Account Login / Sign-in Section -->
+        <div id="accountSection" class="space-y-2 p-3 bg-zinc-900/80 rounded-lg border accent-border card-box">
+          <label class="font-semibold text-gray-300 block flex items-center justify-between text-[11px]">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-lock accent-color"></i> Account Login</span>
+            <span id="accountStatusBadge" class="text-[9px] px-1.5 py-0.5 rounded border accent-border text-gray-400">Offline</span>
+          </label>
+          
+          <!-- Logged In View -->
+          <div id="loggedInView" class="hidden space-y-1.5">
+            <div class="flex items-center justify-between p-2 bg-zinc-950 rounded-lg border accent-border">
+              <div class="flex items-center gap-2">
+                <div id="userAvatarIcon" class="w-6 h-6 rounded-full bg-zinc-800 border accent-border flex items-center justify-center font-bold text-[10px] accent-color shrink-0">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="min-w-0">
+                  <p id="loggedInEmail" class="font-bold text-[11px] accent-color truncate"></p>
+                  <p id="authProviderType" class="text-[9px] text-gray-400">Authenticated & Encrypted</p>
+                </div>
+              </div>
+              <button onclick="handleLogout()" class="px-2 py-1 bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/50 rounded-lg text-[10px] font-semibold transition shrink-0">
+                Sign Out
+              </button>
+            </div>
+          </div>
+
+          <!-- Login Form -->
+          <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-2">
+            <div>
+              <label class="text-[10px] text-gray-400 block mb-0.5">Email Address</label>
+              <input type="email" id="loginEmail" placeholder="user@reddragon.ai" class="w-full bg-zinc-950 border accent-border rounded-lg p-1.5 text-[11px] text-white focus:outline-none focus:ring-1 accent-ring">
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-400 block mb-0.5">Password</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-zinc-950 border accent-border rounded-lg p-1.5 text-[11px] text-white focus:outline-none focus:ring-1 accent-ring">
+            </div>
+
+            <div id="loginError" class="hidden p-2 bg-red-950/60 border border-red-800/80 text-red-300 rounded-lg text-[10px] flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+              <span id="loginErrorText">Invalid email or password.</span>
+            </div>
+
+            <div class="flex space-x-1.5 pt-0.5">
+              <button type="submit" class="flex-1 py-1.5 accent-bg accent-bg-hover text-white rounded-lg text-[11px] font-semibold transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-right-to-bracket text-[10px]"></i> Sign In
+              </button>
+              <button type="button" onclick="handleRegisterAccount()" class="px-2 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-gray-200 border accent-border rounded-lg text-[11px] transition">
+                Register
+              </button>
+            </div>
+
+            <div class="pt-1 border-t border-zinc-800">
+              <button type="button" onclick="handleGoogleLogin()" class="w-full py-1.5 bg-white hover:bg-gray-100 text-zinc-900 rounded-lg text-[11px] font-bold flex items-center justify-center gap-2 transition shadow">
+                <i class="fa-brands fa-google text-red-600"></i> Sign in with Google
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 8. Reset Default Settings Button -->
+        <div class="pt-1 border-t accent-border">
+          <button onclick="restoreDefaultSettings()" class="w-full py-1.5 bg-zinc-900 hover:bg-zinc-800 text-gray-300 font-semibold rounded-lg border accent-border transition text-[11px] flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> Restore Defaults
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOCAL FILE ACCESS -->
+  <div id="fileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3">
+    <div class="bg-zinc-950 border accent-border modal-card w-full max-w-sm rounded-xl shadow-xl p-4 space-y-3 text-gray-200">
+      <div class="flex justify-between items-center border-b accent-border pb-2 bg-black/50 -mx-4 -mt-4 p-4 rounded-t-xl">
+        <h3 class="font-bold accent-color text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-folder-tree accent-color"></i> Device File Access
+        </h3>
+        <button onclick="closeModal('fileModal')" class="text-gray-400 hover:text-red-500">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-gray-400 leading-tight">
+        Select local documents, images, or files to analyze offline without uploading anywhere.
+      </p>
+
+      <input type="file" id="localFileInput" multiple onchange="handleFileSelection(event)" class="block w-full text-[10px] text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-zinc-800 file:text-gray-200 hover:file:bg-zinc-700">
+
+      <div id="selectedFilesList" class="max-h-32 overflow-y-auto space-y-1 text-[11px] text-gray-300">
+        <!-- Selected files listed here -->
+      </div>
+
+      <button onclick="closeModal('fileModal')" class="w-full py-1.5 accent-bg accent-bg-hover text-white rounded-lg text-xs font-semibold">Done</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC & MEDIA ENGINES -->
+  <script>
+    // DEFAULT CONFIGURATION & APP STATE
+    const DEFAULT_CONFIG = {
+      uncensored: true,
+      safeSearch: 'blur', // 'blur', 'filter', 'no'
+      appearance: 'dark',
+      themeColor: 'red',
+      textColor: 'text-gray-100',
+      logoOption: 'default',
+      customLogoUrl: '',
+      voice: 'jarvis',
+      voicePitch: 1.0,
+      voiceRate: 1.0,
+      language: 'en-GB',
+      isMuted: false,
+      incognito: false,
+      devVerbose: false,
+      devSymbols: true,
+      devHardware: true,
+      currentUser: null,
+      userAccounts: [
+        { email: 'admin@reddragon.ai', password: 'password123', provider: 'System Admin' }
+      ]
+    };
+
+    let appConfig = { ...DEFAULT_CONFIG };
+    let lastAiResponseText = "Welcome to Red Dragon AI. How can I assist you securely offline today?";
+    let activeLongPressedMsgElement = null;
+    let longPressTimer = null;
+
+    // KEYDOWN HANDLER FOR INPUT TEXTAREA
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        const chatForm = document.getElementById('chatForm');
+        if (chatForm) chatForm.requestSubmit();
+      }
+    }
+
+    // HANDLE SEND MESSAGE
+    function handleSendMessage(event) {
+      if (event) event.preventDefault();
+      const inputEl = document.getElementById('userInput');
+      if (!inputEl) return;
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      appendMessage(text, 'user');
+      inputEl.value = '';
+
+      simulateAiResponse(text);
+    }
+
+    // APPEND MESSAGE TO CHAT CONTAINER
+    function appendMessage(text, sender, mediaHtml = '') {
+      const container = document.getElementById('chatContainer');
+      if (!container) return;
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-2.5`;
+      
+      const isUser = sender === 'user';
+      msgDiv.innerHTML = `
+        <div class="max-w-[85%] p-3 rounded-xl text-xs space-y-1.5 shadow-md ${
+          isUser 
+            ? 'accent-bg text-white chat-bubble-user' 
+            : 'bg-zinc-950 border accent-border text-gray-200 chat-bubble-ai'
+        }" onmousedown="startLongPress(event, this)" ontouchstart="startLongPress(event, this)" onmouseup="cancelLongPress()" ontouchend="cancelLongPress()">
+          <div class="flex items-center justify-between text-[9px] opacity-70 pb-0.5 border-b border-white/10">
+            <span>${isUser ? 'You' : 'Red Dragon AI'}</span>
+            <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+          <p class="leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+          ${mediaHtml}
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // SIMULATE AI RESPONSE & LIVE MEDIA SEARCH
+    function simulateAiResponse(query) {
+      const chatContainer = document.getElementById('chatContainer');
+      if (!chatContainer) return;
+      const processingId = 'proc_' + Date.now();
+      
+      const symbol = document.getElementById('aiActiveAnimationSymbol');
+      if (symbol) symbol.classList.remove('hidden');
+
+      const procDiv = document.createElement('div');
+      procDiv.id = processingId;
+      procDiv.className = 'flex justify-start mb-2.5';
+      procDiv.innerHTML = `
+        <div class="p-3 rounded-xl bg-zinc-950 border accent-border text-xs text-gray-300 flex items-center gap-2">
+          <i class="fa-solid fa-atom fa-spin accent-color"></i>
+          <span>Searching global web indices & generating uncensored results...</span>
+        </div>
+      `;
+      chatContainer.appendChild(procDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      setTimeout(() => {
+        if (symbol) symbol.classList.add('hidden');
+        const elem = document.getElementById(processingId);
+        if (elem) elem.remove();
+
+        let responseText = `Processed query: "${query}". Retrieved live unfiltered search results from web indices:`;
+        let mediaHtml = '';
+
+        const lower = query.toLowerCase();
+        if (lower.includes('image') || lower.includes('photo') || lower.includes('picture')) {
+          const blurClass = appConfig.safeSearch === 'blur' ? 'filter blur-md hover:blur-none transition duration-300' : '';
+          mediaHtml = `
+            <div class="grid grid-cols-2 gap-2 pt-2">
+              <div class="relative group rounded-lg overflow-hidden border accent-border bg-zinc-900">
+                <img src="https://placehold.co/300x300/18181b/dc2626?text=Uncensored+Result+1" class="w-full h-28 object-cover ${blurClass}" alt="Result 1">
+                <span class="absolute bottom-1 left-1 bg-black/70 text-[8px] text-white px-1 rounded">Source #1</span>
+              </div>
+              <div class="relative group rounded-lg overflow-hidden border accent-border bg-zinc-900">
+                <img src="https://placehold.co/300x300/18181b/0284c7?text=Uncensored+Result+2" class="w-full h-28 object-cover ${blurClass}" alt="Result 2">
+                <span class="absolute bottom-1 left-1 bg-black/70 text-[8px] text-white px-1 rounded">Source #2</span>
+              </div>
+            </div>
+          `;
+        } else if (lower.includes('video') || lower.includes('clip')) {
+          mediaHtml = `
+            <div class="pt-2">
+              <div class="rounded-lg overflow-hidden border accent-border bg-zinc-900 p-2 text-center space-y-1">
+                <div class="w-full h-28 bg-zinc-950 rounded flex items-center justify-center relative group">
+                  <i class="fa-solid fa-play text-2xl accent-color"></i>
+                  <span class="absolute bottom-1 right-1 bg-black/80 text-[8px] px-1 rounded text-white">Live Stream</span>
+                </div>
+                <p class="text-[10px] text-gray-300 truncate">Uncensored Video Clip - Live Web Index</p>
+              </div>
+            </div>
+          `;
+        } else if (lower.includes('audio') || lower.includes('music')) {
+          mediaHtml = `
+            <div class="pt-2">
+              <div class="p-2 rounded-lg bg-zinc-900 border accent-border flex items-center space-x-2">
+                <button onclick="playAudioTone()" class="w-8 h-8 rounded-full accent-bg text-white flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[10px] font-bold truncate text-white">Synthesized Audio Stream</p>
+                  <p class="text-[9px] text-gray-400">WebAudio API Frequency Module</p>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          mediaHtml = `
+            <div class="p-2 mt-1 rounded bg-zinc-900/80 border accent-border text-[11px] text-gray-300 font-mono">
+              [OK] Unrestricted global search completed. Zero safety guardrails applied.
+            </div>
+          `;
+        }
+
+        lastAiResponseText = responseText;
+        appendMessage(responseText, 'ai', mediaHtml);
+      }, 1200);
+    }
+
+    // SEARCH LIVE MEDIA PROMPT BUTTONS
+    function searchLiveMediaPrompt(type) {
+      let promptText = "";
+      if (type === 'image') promptText = "Show random unfiltered images";
+      if (type === 'video') promptText = "Find uncensored video clips";
+      if (type === 'audio') promptText = "Fetch audio streams";
+      if (type === 'web') promptText = "Perform unrestricted web search";
+
+      const userInput = document.getElementById('userInput');
+      if (userInput) {
+        userInput.value = promptText;
+        handleSendMessage();
+      }
+    }
+
+    // AUDIO TONE SYNTHESIZER
+    function playAudioTone() {
+      if (appConfig.isMuted) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 500);
+      } catch (e) {
+        console.log("Audio not supported");
+      }
+    }
+
+    // ESCAPE HTML HELPER
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // LONG PRESS MESSAGE OPTIONS
+    function startLongPress(e, el) {
+      activeLongPressedMsgElement = el;
+      longPressTimer = setTimeout(() => {
+        openModal('messageOptionsModal');
+      }, 600);
+    }
+    function cancelLongPress() {
+      if (longPressTimer) clearTimeout(longPressTimer);
+    }
+
+    // MESSAGE OPTIONS ACTION HANDLER
+    function msgAction(action) {
+      closeModal('messageOptionsModal');
+      if (!activeLongPressedMsgElement) return;
+
+      const textElement = activeLongPressedMsgElement.querySelector('p');
+      const messageText = textElement ? textElement.innerText : '';
+
+      if (action === 'copy') {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = messageText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand('copy');
+          alertBox('Message copied to clipboard.');
+        } catch (err) {
+          console.error('Copy failed', err);
+        }
+        document.body.removeChild(tempInput);
+      } else if (action === 'forward') {
+        const userInput = document.getElementById('userInput');
+        if (userInput) userInput.value = "Forwarded: " + messageText;
+        alertBox('Message loaded into input for forwarding.');
+      } else if (action === 'send') {
+        const userInput = document.getElementById('userInput');
+        if (userInput) {
+          userInput.value = messageText;
+          handleSendMessage();
+        }
+      } else if (action === 'deleteForMe' || action === 'deleteForEveryone') {
+        const parentFlex = activeLongPressedMsgElement.closest('.flex');
+        if (parentFlex) parentFlex.remove();
+        alertBox(action === 'deleteForEveryone' ? 'Message deleted for everyone.' : 'Message deleted for you.');
+      }
+      activeLongPressedMsgElement = null;
+    }
+
+    // CUSTOM ALERT BOX HELPER (AVOIDS native alert())
+    function alertBox(msg) {
+      const existing = document.getElementById('customAlertBanner');
+      if (existing) existing.remove();
+
+      const banner = document.createElement('div');
+      banner.id = 'customAlertBanner';
+      banner.className = 'fixed top-12 left-1/2 transform -translate-x-1/2 z-50 bg-zinc-900 border accent-border text-xs text-white px-3 py-2 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce';
+      banner.innerHTML = `<i class="fa-solid fa-circle-info accent-color"></i><span>${escapeHtml(msg)}</span>`;
+      document.body.appendChild(banner);
+      setTimeout(() => { 
+        if (banner.parentNode) banner.parentNode.removeChild(banner); 
+      }, 2500);
+    }
+
+    // MODAL HELPERS
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.remove('hidden');
+    }
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // DEVELOPER ACCESS PASSWORD CHECK
+    function requestDeveloperAccess() {
+      openModal('devPasswordModal');
+    }
+
+    function verifyDeveloperPassword(event) {
+      if (event) event.preventDefault();
+      const pwdInput = document.getElementById('devPasswordInput');
+      const errEl = document.getElementById('devPassError');
+      if (!pwdInput || !errEl) return;
+      const pwd = pwdInput.value;
+      if (pwd === 'achievemen@radium') {
+        errEl.classList.add('hidden');
+        pwdInput.value = '';
+        closeModal('devPasswordModal');
+        openModal('developerModal');
+      } else {
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    // TOGGLE MUTE VOICE
+    function toggleMuteVoice() {
+      appConfig.isMuted = !appConfig.isMuted;
+      const icon = document.getElementById('muteIcon');
+      if (!icon) return;
+      if (appConfig.isMuted) {
+        icon.className = "fa-solid fa-volume-xmark text-xs text-red-500";
+        alertBox("Voice sound muted.");
+      } else {
+        icon.className = "fa-solid fa-volume-high text-xs";
+        alertBox("Voice sound unmuted.");
+      }
+    }
+
+    // TOGGLE INCOGNITO MODE
+    function toggleIncognitoMode() {
+      appConfig.incognito = !appConfig.incognito;
+      const badge = document.getElementById('incognitoBadge');
+      if (!badge) return;
+      if (appConfig.incognito) {
+        badge.classList.remove('hidden');
+        alertBox("Incognito Mode Active: Chat history will not persist.");
+      } else {
+        badge.classList.add('hidden');
+        alertBox("Incognito Mode Deactivated.");
+      }
+    }
+
+    // OPEN ACCOUNT SETTINGS
+    function openAccountSettings() {
+      openModal('settingsModal');
+    }
+
+    // SET THEME COLOUR
+    function setThemeColor(color) {
+      appConfig.themeColor = color;
+      document.body.className = document.body.className.replace(/theme-\w+/, 'theme-' + color);
+      updateSettings();
+    }
+
+    // UPDATE SETTINGS FROM UI
+    function updateSettings() {
+      const uncensoredToggle = document.getElementById('uncensoredToggle');
+      const safeSearchSelect = document.getElementById('safeSearchSelect');
+      const appearanceModeSelect = document.getElementById('appearanceModeSelect');
+      const voiceModelSelect = document.getElementById('voiceModelSelect');
+      const voicePitch = document.getElementById('voicePitch');
+      const voiceRate = document.getElementById('voiceRate');
+      const languageSelect = document.getElementById('languageSelect');
+
+      if (uncensoredToggle) appConfig.uncensored = uncensoredToggle.checked;
+      if (safeSearchSelect) appConfig.safeSearch = safeSearchSelect.value;
+      if (appearanceModeSelect) appConfig.appearance = appearanceModeSelect.value;
+      if (voiceModelSelect) appConfig.voice = voiceModelSelect.value;
+      if (voicePitch) appConfig.voicePitch = parseFloat(voicePitch.value);
+      if (voiceRate) appConfig.voiceRate = parseFloat(voiceRate.value);
+      if (languageSelect) appConfig.language = languageSelect.value;
+
+      const pitchVal = document.getElementById('pitchVal');
+      const rateVal = document.getElementById('rateVal');
+      if (pitchVal && voicePitch) pitchVal.innerText = voicePitch.value;
+      if (rateVal && voiceRate) rateVal.innerText = voiceRate.value;
+
+      const badge = document.getElementById('uncensoredBadge');
+      if (badge) {
+        if (appConfig.uncensored) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      if (appConfig.appearance === 'light') {
+        document.body.classList.add('app-light-mode');
+      } else {
+        document.body.classList.remove('app-light-mode');
+      }
+    }
+
+    // RESTORE DEFAULTS
+    function restoreDefaultSettings() {
+      appConfig = { ...DEFAULT_CONFIG };
+      const uncensoredToggle = document.getElementById('uncensoredToggle');
+      const safeSearchSelect = document.getElementById('safeSearchSelect');
+      const appearanceModeSelect = document.getElementById('appearanceModeSelect');
+      const voiceModelSelect = document.getElementById('voiceModelSelect');
+      const voicePitch = document.getElementById('voicePitch');
+      const voiceRate = document.getElementById('voiceRate');
+      const languageSelect = document.getElementById('languageSelect');
+
+      if (uncensoredToggle) uncensoredToggle.checked = true;
+      if (safeSearchSelect) safeSearchSelect.value = 'blur';
+      if (appearanceModeSelect) appearanceModeSelect.value = 'dark';
+      if (voiceModelSelect) voiceModelSelect.value = 'jarvis';
+      if (voicePitch) voicePitch.value = 1.0;
+      if (voiceRate) voiceRate.value = 1.0;
+      if (languageSelect) languageSelect.value = 'en-GB';
+
+      setThemeColor('red');
+      updateSettings();
+      alertBox("Settings restored to defaults.");
+    }
+
+    // AUTH LOGIN HANDLERS
+    function handleLoginSubmit(event) {
+      if (event) event.preventDefault();
+      const emailEl = document.getElementById('loginEmail');
+      const passEl = document.getElementById('loginPassword');
+      const errBox = document.getElementById('loginError');
+      const errText = document.getElementById('loginErrorText');
+      if (!emailEl || !passEl || !errBox || !errText) return;
+
+      const email = emailEl.value.trim();
+      const pass = passEl.value.trim();
+
+      const found = appConfig.userAccounts.find(u => u.email === email && u.password === pass);
+      if (found) {
+        errBox.classList.add('hidden');
+        appConfig.currentUser = { email: found.email, provider: found.provider || 'Email / Password' };
+        renderAccountState();
+        alertBox("Successfully signed in as " + email);
+      } else {
+        errBox.classList.remove('hidden');
+        errText.innerText = "Invalid email or password.";
+      }
+    }
+
+    function handleRegisterAccount() {
+      const emailEl = document.getElementById('loginEmail');
+      const passEl = document.getElementById('loginPassword');
+      const errBox = document.getElementById('loginError');
+      const errText = document.getElementById('loginErrorText');
+      if (!emailEl || !passEl || !errBox || !errText) return;
+
+      const email = emailEl.value.trim();
+      const pass = passEl.value.trim();
+
+      if (!email || !pass) {
+        errBox.classList.remove('hidden');
+        errText.innerText = "Please enter both email and password to register.";
+        return;
+      }
+
+      const exists = appConfig.userAccounts.find(u => u.email === email);
+      if (exists) {
+        errBox.classList.remove('hidden');
+        errText.innerText = "Account already exists. Please sign in.";
+        return;
+      }
+
+      appConfig.userAccounts.push({ email, password: pass, provider: 'Registered User' });
+      appConfig.currentUser = { email, provider: 'Registered User' };
+      errBox.classList.add('hidden');
+      renderAccountState();
+      alertBox("Account registered and signed in successfully!");
+    }
+
+    function handleGoogleLogin() {
+      appConfig.currentUser = { email: 'google.user@gmail.com', provider: 'Google OAuth' };
+      renderAccountState();
+      alertBox("Successfully signed in with Google.");
+    }
+
+    function handleLogout() {
+      appConfig.currentUser = null;
+      renderAccountState();
+      alertBox("Signed out successfully.");
+    }
+
+    function renderAccountState() {
+      const loginForm = document.getElementById('loginForm');
+      const loggedInView = document.getElementById('loggedInView');
+      const statusBadge = document.getElementById('accountStatusBadge');
+      const loggedInEmail = document.getElementById('loggedInEmail');
+      const authProviderType = document.getElementById('authProviderType');
+      const loginEmail = document.getElementById('loginEmail');
+      const loginPassword = document.getElementById('loginPassword');
+
+      if (appConfig.currentUser) {
+        if (loginForm) loginForm.classList.add('hidden');
+        if (loggedInView) loggedInView.classList.remove('hidden');
+        if (statusBadge) {
+          statusBadge.innerText = 'Online';
+          statusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded border border-emerald-600 bg-emerald-950 text-emerald-400';
+        }
+        if (loggedInEmail) loggedInEmail.innerText = appConfig.currentUser.email;
+        if (authProviderType) authProviderType.innerText = 'Authenticated via ' + appConfig.currentUser.provider;
+      } else {
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (loggedInView) loggedInView.classList.add('hidden');
+        if (statusBadge) {
+          statusBadge.innerText = 'Offline';
+          statusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded border accent-border text-gray-400';
+        }
+        if (loginEmail) loginEmail.value = '';
+        if (loginPassword) loginPassword.value = '';
+      }
+    }
+
+    // DEVELOPER CODE INJECTOR & UTILS
+    function executeInjectedCode() {
+      const devCodeInput = document.getElementById('devCodeInjectorInput');
+      if (!devCodeInput) return;
+      const code = devCodeInput.value.trim();
+      if (!code) return;
+      try {
+        const result = eval(code);
+        alertBox("Code injected & executed successfully!");
+        console.log("Injected result:", result);
+      } catch (err) {
+        alertBox("Execution error: " + err.message);
+      }
+    }
+
+    function dumpLocalStorage() {
+      alertBox("Local storage payload inspected in console.");
+      console.log("App Config State:", appConfig);
+    }
+
+    function clearAllChatLogs() {
+      const chatContainer = document.getElementById('chatContainer');
+      if (chatContainer) {
+        chatContainer.innerHTML = `
+          <div class="p-3 rounded-xl bg-zinc-950 border accent-border card-box shadow-md text-xs space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-1.5 accent-color font-semibold text-xs">
+                <i class="fa-solid fa-shield-halved text-xs"></i>
+                <span>Uncensored Media Search & AI Engine</span>
+              </div>
+            </div>
+            <p class="text-gray-300 text-[11px] leading-relaxed">Cache cleared. Ready for new queries.</p>
+          </div>
+        `;
+      }
+      alertBox("Offline cache memory cleared.");
+    }
+
+    function toggleDevSetting(type) {
+      const devVerboseToggle = document.getElementById('devVerboseToggle');
+      const devSymbolToggle = document.getElementById('devSymbolToggle');
+      const devHardwareToggle = document.getElementById('devHardwareToggle');
+
+      if (type === 'verbose' && devVerboseToggle) appConfig.devVerbose = devVerboseToggle.checked;
+      if (type === 'symbols' && devSymbolToggle) appConfig.devSymbols = devSymbolToggle.checked;
+      if (type === 'hardware' && devHardwareToggle) appConfig.devHardware = devHardwareToggle.checked;
+      alertBox("Developer switch updated.");
+    }
+
+    function handleLogoSelectChange() {
+      const logoOptionSelect = document.getElementById('logoOptionSelect');
+      const deviceGroup = document.getElementById('deviceLogoInputGroup');
+      const urlGroup = document.getElementById('urlLogoInputGroup');
+      if (!logoOptionSelect || !deviceGroup || !urlGroup) return;
+
+      const val = logoOptionSelect.value;
+      deviceGroup.classList.add('hidden');
+      urlGroup.classList.add('hidden');
+
+      if (val === 'device') deviceGroup.classList.remove('hidden');
+      if (val === 'url') urlGroup.classList.remove('hidden');
+    }
+
+    function loadLogoFromFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const container = document.getElementById('appLogoContainer');
+          if (container) {
+            container.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+          }
+          alertBox("Custom logo loaded from device.");
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function applyLogoFromUrl() {
+      const urlInput = document.getElementById('logoUrlInput');
+      if (!urlInput) return;
+      const url = urlInput.value.trim();
+      if (url) {
+        const container = document.getElementById('appLogoContainer');
+        if (container) {
+          container.innerHTML = `<img src="${url}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/000/fff?text=Logo'">`;
+        }
+        alertBox("Custom logo applied from URL.");
+      }
+    }
+
+    function speakLastResponse() {
+      if (appConfig.isMuted) {
+        alertBox("Voice output is muted.");
+        return;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(lastAiResponseText);
+        utterance.pitch = appConfig.voicePitch;
+        utterance.rate = appConfig.voiceRate;
+        window.speechSynthesis.speak(utterance);
+        alertBox("Reading response aloud...");
+      } else {
+        alertBox("Speech synthesis not supported in this browser.");
+      }
+    }
+
+    function handleFileSelection(event) {
+      const files = event.target.files;
+      const listContainer = document.getElementById('selectedFilesList');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+      for (let i = 0; i < files.length; i++) {
+        const item = document.createElement('div');
+        item.className = 'p-1.5 bg-zinc-900 rounded border accent-border flex items-center justify-between text-[10px]';
+        item.innerHTML = `<span><i class="fa-solid fa-file me-1 accent-color"></i>${escapeHtml(files[i].name)}</span><span class="text-emerald-400 font-mono">Ready</span>`;
+        listContainer.appendChild(item);
+      }
+      alertBox(files.length + " file(s) loaded for offline analysis.");
+    }
+  </script>
+</body>
+</html>
